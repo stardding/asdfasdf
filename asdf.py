@@ -9,15 +9,15 @@ for _ in range(int(sys.stdin.readline())):
 		inp.append(list(map(int,sys.stdin.readline().split())))		#입력
 	total=sum([sum(i) for i in inp])
 	gragh=[dict() for i in range(n*m+2)]
-	for i in range(n):												#그래프 초기화
+	for i in range(n):							#그래프 초기화
 		for j in range(m):
 			if ch:
-				gragh[n*m][i*m+j]=inp[i][j]							#격자 연결
+				gragh[n*m][i*m+j]=inp[i][j]			#격자 연결
 			else:
 				gragh[i*m+j][n*m+1]=inp[i][j]
 			ch=not ch
 
-			if j%m!=0:												#인접 노드 연결
+			if j%m!=0:						#인접 노드 연결
 				gragh[i*m+j][i*m+j-1]=math.inf
 			if j%m!=m-1:
 				gragh[i*m+j][i*m+j+1]=math.inf
@@ -56,4 +56,4 @@ for _ in range(int(sys.stdin.readline())):
 			flow[parent[t]][t]+=wave
 			flow[t][parent[t]]-=wave
 			t=parent[t]
-	print(total-res)
+	print(total-res)							#결과 출력
