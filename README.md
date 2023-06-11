@@ -1,2 +1,2 @@
 # asdfasdf
-https://www.acmicpc.net/problem/11495
+https://www.acmicpc.net/problem/10167
