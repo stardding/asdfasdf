@@ -1,59 +1,46 @@
-import sys,math
-from collections import deque
+import sys
 
-for _ in range(int(sys.stdin.readline())):
-	n,m=map(int,sys.stdin.readline().split())
-	inp=[]
-	ch=False
-	for i in range(n):
-		inp.append(list(map(int,sys.stdin.readline().split())))		#입력
-	total=sum([sum(i) for i in inp])
-	gragh=[dict() for i in range(n*m+2)]
-	for i in range(n):							#그래프 초기화
-		for j in range(m):
-			if ch:
-				gragh[n*m][i*m+j]=inp[i][j]			#격자 연결
-			else:
-				gragh[i*m+j][n*m+1]=inp[i][j]
-			ch=not ch
+n=int(sys.stdin.readline())
+ix=[];iy=[];iw=[]
+for i in range(n):
+	x,y,w=map(int,sys.stdin.readline().split())
+	ix.append(x)
+	iy.append(y)
+	iw.append(w)
 
-			if j%m!=0:						#인접 노드 연결
-				gragh[i*m+j][i*m+j-1]=math.inf
-			if j%m!=m-1:
-				gragh[i*m+j][i*m+j+1]=math.inf
-			if i>0:
-				gragh[i*m+j][(i-1)*m+j]=math.inf
-			if i<n-1:
-				gragh[i*m+j][(i+1)*m+j]=math.inf
+nx=len(set(ix));ny=len(set(iy))								# 좌표 압축
+tx=dict(zip(sorted(list(set(ix))),[i for i in range(nx)]))
+ty=dict(zip(sorted(list(set(iy))),[i for i in range(ny)]))
 
-		if m%2==0:
-			ch=not ch
-	
-	flow=[[0 for i in range(n*m+2)] for j in range(n*m+2)]			#에드몬드-카프
-	res=0
-	while True:
-		q=deque([n*m])
-		parent=[-1 for i in range(n*m+2)]
-		parent[n*m]=n*m
-		while q:
-			now=q.popleft()
-			for nex,capacity in gragh[now].items():
-				if parent[nex]==-1 and capacity-flow[now][nex]>0:
-					q.append(nex)
-					parent[nex]=now
+gold={}
+for x,y,w in zip(ix,iy,iw):
+	if tx[x] in gold.keys():
+		gold[tx[x]].append((ty[y],w))
+	else:
+		gold[tx[x]]=[(ty[y],w)]
 
-		if parent[n*m+1]==-1:
-			break
+def update(t,v,node,l,r):									# 세그먼트 트리 업데이트
+	if t<l or r<t:
+		return stree[node]
+	elif l==r:
+		for i in range(4):
+			stree[node][i]+=v
+		return stree[node]
+	mid=l+r>>1
+	lv=update(t,v,node<<1,l,mid)
+	rv=update(t,v,node<<1|1,mid+1,r)
+	stree[node][0]=lv[0]+rv[0]
+	stree[node][1]=max(lv[1],rv[1],lv[3]+rv[2])
+	stree[node][2]=max(lv[2],lv[0]+rv[2])
+	stree[node][3]=max(rv[3],rv[0]+lv[3])
+	return stree[node]
 
-		t=n*m+1
-		wave=math.inf
-		while t!=n*m:
-			wave=min(wave,gragh[parent[t]][t]-flow[parent[t]][t])
-			t=parent[t]
-		res+=wave
-		t=n*m+1
-		while t!=n*m:
-			flow[parent[t]][t]+=wave
-			flow[t][parent[t]]-=wave
-			t=parent[t]
-	print(total-res)							#결과 출력
+m=0
+for x1 in range(nx):
+	stree=[[0,0,0,0] for i in range(ny<<2)]				 	# 0:all, 1:mid sum, 2:left sum, 3:right sum
+	for x2 in range(x1,nx):
+		for y,w in gold[x2]:
+			update(y,w,1,0,ny-1)
+		m=max(m,stree[1][1])
+
+print(m)
